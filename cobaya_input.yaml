@@ -1,0 +1,123 @@
+#This is a sample cobaya YAML file
+
+#Block Indentation must be coherent!
+
+#THEORY BLOCK: 
+theory:
+ camb:
+  extra_args:
+   halofit_version: mead            #for modelling small-scale non-linear matter power spectrum
+   #bbn_predictor: PArthENoPE_880.2_standard.dat
+   lens_potential_accuracy: 1
+   num_massive_neutrinos: 1
+   nnu: 3.044
+
+
+
+#LIKELIHOOD BLOCK: List of the likelihoods pdf's to be explored
+likelihood:
+  gaussian_mixture:
+    means: [0.2, 0]
+    covs: [[0.1, 0.05], [0.05,0.2]]
+    derived: True
+
+#PARAMETERS BLOCK: 
+
+# Three types of parameters:
+# 1. FIXED: Passed directly to the likelihood block
+# 2. SAMPLED: Need a prior pdf, optionally, a reference pdf, a latex label etc
+# 3. DERIVED: No prior, can have a latex label, can have a min/max value
+
+#reference pdf: an initial starting point for the chains, avoids long burn-ins, chains could be stuck
+
+# SAMPLED: Syntax for prior and ref pdf:
+
+# dist: default is uniform, others include norm (gaussian), [log]norm, halfnorm
+# loc: default is 0: location of the pdf in scipy.stats
+# scale: default is 1: scale of the pdf in scipy.stats
+#
+#For uniform pdf: loc:lower bound & scale:length of the domain, min,max too (default 0 and 1)
+#For norm pdf: loc:mean & scale:standard deviation
+
+# Multi-dimensional priors:
+# [name]:function       the functions return log-priors
+# The bounds have to specified in params even if the priors are defined in the prior block
+# Prior is specified as a function with def or lambda
+
+# Defining parameters dynamically:
+# If the desired posterior space is different from the likelihood (reason maybe because it is simpler in another reparametrization)
+# These are saved by defualt as derived parameters, can use derived:False to ignore
+
+
+params:
+  A: 1  # FIXED
+
+  B1:  # SAMPLED! with uniform prior on [-1,1] and ref pdf N(mu=0,sigma=0.25)
+    prior:
+      min: -1
+      max: 1
+    ref:
+      dist: norm
+      loc:   0
+      scale: 0.25
+    latex: \mathcal{B}_2
+    proposal: 0.25    # expected standard deviation of the proposal (by default, it takes the ref pdf's value)
+
+  B2:  # SAMPLED! with prior N(mu=0.5,sigma=3) and fixed reference value 1
+    prior:
+      dist: norm
+      loc: 0.5
+      scale: 3
+    ref: 1  # fixed reference value: all chains start here!
+    latex: \mathcal{B}_2
+    proposal: 0.5
+
+  C:  # DERIVED!
+    min: 0
+    latex: \mathcal{C}
+
+  logx:  # RE-PARAMETRIZATION: likelihood depends on x but log(x) is the sampled parameter
+    prior:            
+      min: -1
+      max: 1
+    drop: True
+    x: "lambda logx: np.exp(logx)"
+    y:
+      derived: "lambda x: x**2"  
+# logx is a SAMPLED PARAMETER: mcmc interacts with this, should be dropped since the likelihood does not recognize
+# x is a LIKELIHOOD INPUT PARAMETER: can be given a prior/not dropped/fixed value/function, is passed to the likelihood(theory)
+# y is just another derived parameter
+
+
+
+#SAMPLER BLOCK: What sampler we use, number of samples used, how many initial samples to ignore (burn in), etc
+sampler:
+ mcmc:
+  drag: true    # taking a number of intermediate fast steps when jumping between positions in the slow parameter space, such that (for large numbers of dragging steps) the fast parameters are dragged along the direction of any degeneracy with the slow parameters
+  oversample_power: 0.4   #taking more steps in the faster directions in the parameter space
+  proposal_scale: 1.9
+  covmat: auto          #can provide a covmat but auto 
+  Rminus1_stop: 0.01  #when this becomes smaller than the given value twice in a row, a second check is performed on the % confidence interval
+  Rminus1_c1_level: 0.95  #optional, 0.95 is the default value
+  Rminus1_cl_stop: 0.2  #if this is also smaller, then the run is stopped
+
+
+#OUTPUT BLOCK: Path where the output chains will be written and a prefix for their name
+output: chains/gaussian
+
+
+
+
+# To run cobaya from shell use the command cobaya-run followed by your yaml file like:
+# $ cobaya-run input.yaml
+
+# If you have existing chains in the output folder, and you wish to overwrite them, use either:
+# 1. Set force: True in the input file
+# 2. cobaya-run input.yaml -f
+# 3. In script file, use run(input, force=True)
+# Instead to resume the previous sample:
+# 1. Set resume: True
+# 2. cobaya-run input.yaml -r
+# 3. In script file, use run(input, resume=True)
+
+#If you do cobaya-run chains/ instead of cobaya-run input.yaml that will also resume the sample instead of overwriting 
