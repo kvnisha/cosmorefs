@@ -34,10 +34,14 @@ Organizational tips (Productivity :chart_with_upwards_trend: )
     * Instead you have commits that you can go back to, all linked to the same file
 * Learn the keyboard shortcuts you have access to and utilize them!
     * Ctrl+/ is a personal favorite, it toggles making the selected lines of code a comment! (or uncomment if it was previously commented out)
+    * Tab to indent the selected lines of code & Shift+Tab to undo indentation
     * Ctrl+T opens a new tab in a web browser
     * Ctrl+Shift+T reopens the last closed tab
     * Ctrl+Tab goes to the next tab
     * Ctrl+Shift+Tab goes to the previous one
+    * Ctrl+W to close the current window
     * Windows+Tab show all the windows opened in your current virtual desktop
+    * Win+Arrow keys to move your windows around within a single display
+    * Win+Shift+Arrow keys to move your windows across multiple displays
     * Middle click does a bunch of good stuff like opening links in a background tab
-
+    * Win+L to swiftly lock your pc
